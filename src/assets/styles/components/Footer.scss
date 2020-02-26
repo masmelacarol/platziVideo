@@ -1,0 +1,15 @@
+.footer {
+    background: linear-gradient(#8d4456, #774E24);
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    a {
+        cursor: pointer;
+        padding-left: 30px;
+        text-decoration: none;
+        color: #ffffff;
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}

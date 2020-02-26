@@ -1,0 +1,10 @@
+@media (max-width: 600px) {
+    .main__description--title {
+        font-size: 30px;
+    }
+    .footer {
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+    }
+}

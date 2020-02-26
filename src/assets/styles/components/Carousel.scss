@@ -1,0 +1,12 @@
+.carousel {
+    width: 100%;
+    padding: 30px;
+    position: relative;
+    overflow-x: scroll;
+    background: #8d4456;
+    &__container {
+        white-space: nowrap;
+        margin: 50px 0;
+        padding-bottom: 10px;
+    }
+}
