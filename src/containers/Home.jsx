@@ -6,13 +6,12 @@ import Carousel from '../components/Carousel';
 import CarouselItem from '../components/CarouselItem';
 import '../assets/styles/App.scss'
 
-
 const Home = ({mylist, trends, originals}) => {
     return (
         <>
-            <Search/>
+            <Search isHome/>
             {mylist.length > 0 && 
-                <Categories title="Mi Lista">
+                <Categories title="Mi Lista de Favoritos">
                     <Carousel>
                         {mylist.map(item => 
                             <CarouselItem key={item.id} {...item} isList/>
