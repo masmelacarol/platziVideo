@@ -80,5 +80,5 @@ app.get("*", renderApp);
 
 app.listen(PORT, (err) => {
   if (err) console.log(err);
-  else console.log(`server running in mode ${ENV} on port ${PORT}`);
+  else console.log(`Server running in mode ${ENV} on port ${PORT}`);
 });
