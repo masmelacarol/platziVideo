@@ -1,13 +1,11 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import { Provider } from "react-redux";
-import { createStore, compose } from "redux";
-import { Router } from "react-router";
-import { createBrowserHistory } from "history";
-import reducer from "./reducers";
-import App from "./routes/App";
-
-
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+import { createStore, compose } from 'redux';
+import { Router } from 'react-router';
+import { createBrowserHistory } from 'history';
+import reducer from './reducers';
+import App from './routes/App';
 
 const history = createBrowserHistory();
 const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -15,14 +13,14 @@ const preloadedState = window.__PRELOADED_STATE__;
 const store = createStore(reducer, preloadedState, composeEnhancer());
 
 delete window.__PRELOADED_STATE__;
-document.getElementById("preload").remove();
-
+document.getElementById('preload').remove();
 
 ReactDOM.hydrate(
   <Provider store={store}>
     <Router history={history}>
       <App />
-    </Router>{" "}
+    </Router>
+    {' '}
   </Provider>,
-  document.getElementById("app")
+  document.getElementById('app'),
 );
