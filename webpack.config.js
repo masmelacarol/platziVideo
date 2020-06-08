@@ -42,10 +42,10 @@ module.exports = {
                     test(module, chunks) {
                         const name = module.nameForCondition && module.nameForCondition();
                         return chunks.some(chunk => chunk.name !== 'vendors' && /[\\/]node_modules[\\/]/.test(name));
-                    }
-                }
-            }
-        }
+                    },
+                },
+            },
+        },
     },
     module: {
         rules: [{
@@ -58,8 +58,8 @@ module.exports = {
                 test: /\.(js|jsx)$/,
                 exclude: /node_modules/,
                 use: {
-                    loader: 'babel-loader'
-                }
+                    loader: 'babel-loader',
+                },
             },
             {
                 test: /\.(s*)css$/,
@@ -76,10 +76,10 @@ module.exports = {
                     loader: 'file-loader',
                     options: {
                         name: 'assets/[hash].[ext]',
-                    }
-                }]
+                    },
+                }],
 
-            }
+            },
         ],
     },
     devServer: {
