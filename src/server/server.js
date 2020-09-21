@@ -1,3 +1,5 @@
+/* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable global-require */
 import boom from '@hapi/boom';
 import axios from 'axios';
 import cookieParser from 'cookie-parser';
@@ -20,8 +22,8 @@ import getManifest from './getManifest';
 
 dotenv.config();
 
-const { ENV, PORT } = process.env;
 const app = express();
+const { ENV, PORT } = process.env;
 
 app.use(express.json());
 app.use(cookieParser());
@@ -31,56 +33,47 @@ app.use(passport.session());
 require('./utils/auth/strategies/basic');
 
 if (ENV === 'development') {
-  console.log('Development config');
-  // eslint-disable-next-line global-require
-  const webpackConfig = require('../../webpack.config');
-  // eslint-disable-next-line global-require
-  const webpackDevMiddleware = require('webpack-dev-server');
-  // eslint-disable-next-line global-require
+  const webPackConfig = require('../../webpack.config');
+  const webpackDevMiddleware = require('webpack-dev-middleware');
   const webpackHotMiddleware = require('webpack-hot-middleware');
-  const compiler = webpack(webpackConfig);
-  const webpackServerConfig = {
-    port: PORT,
-    hot: true,
-  };
-
-  app.use(webpackDevMiddleware(compiler, webpackServerConfig));
+  const compiler = webpack(webPackConfig);
+  const serverConfig = { port: PORT, hot: true };
+  app.use(webpackDevMiddleware(compiler, serverConfig));
   app.use(webpackHotMiddleware(compiler));
 } else {
   app.use((req, res, next) => {
-    if (!req.hashManifest) req.hashManifest = getManifest();
+    req.hashManifest = getManifest();
     next();
   });
-  app.use(express.static(`${__dirname}/public`));
   app.use(helmet());
   app.use(helmet.permittedCrossDomainPolicies());
-  //El navegador no sabe desde donde se esta conectando la aplicacion
-  //usando: app.disable('x-powered-by');
   app.disable('x-powered-by');
 }
 
 const setResponse = (html, preloadedState, manifest) => {
-  const mainStyles = manifest ? manifest['main.css'] : 'assets/app.css';
-  const mainBuild = manifest ? manifest['main.js'] : 'assets/app.js';
+  const mainStyles = manifest ? manifest['main.css'] : '/assets/app.css';
+  const mainBuild = manifest ? manifest['main.js'] : '/assets/app.js';
   const vendorBuild = manifest ? manifest['vendors.js'] : 'assets/vendor.js';
   return `
-        <!DOCTYPE html>
-            <html>    
-                <head>
-                    <link rel="stylesheet" href="${mainStyles}" type="text/css">
-                    <title>Platzi Video</title>
-                </head>    
-                <body>
-                    <div id="app">${html}</div>
-                    <script id="preload">
-                      // WARNING: See the following for security issues around embedding JSON in HTML:
-                      // https://redux.js.org/recipes/server-rendering/#security-considerations
-                      window.__PRELOADED_STATE__ = ${JSON.stringify(preloadedState).replace(/</g, '\\u003c')}
-                    </script>
-                    <script src="${mainBuild}" type="text/javascript"></script>
-                    <script src="${vendorBuild}" type="text/javascript"></script>
-                </body>    
-            </html>`;
+      <!DOCTYPE html>
+      <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <meta http-equiv="X-UA-Compatible" content="ie=edge">
+          <meta charset="utf-8" />
+          <link rel="stylesheet" href="${mainStyles}" type="text/css"/>
+          <title>Platfix</title>
+        </head>
+        <body>
+          <div id="app">${html}</div>
+          <script id="preloadedState">
+            window.__PRELOADED_STATE__ = ${JSON.stringify(preloadedState).replace(/</g, '\\u003c')}
+          </script>
+          <script src="${mainBuild}" type="text/javascript"></script>
+          <script src="${vendorBuild}" type="text/javascript"></script>
+        </body>
+      </html>`;
 };
 
 const renderApp = (req, res) => {
@@ -89,40 +82,35 @@ const renderApp = (req, res) => {
   const html = renderToString(
     <Provider store={store}>
       <StaticRouter location={req.url} context={{}}>
-        <Layout> {renderRoutes(serverRoutes)} </Layout>
+        <Layout>{renderRoutes(serverRoutes)}</Layout>
       </StaticRouter>
     </Provider>,
   );
-
   res.send(setResponse(html, preloadedState, req.hashManifest));
 };
 
 app.post('/auth/sign-in', async (req, res, next) => {
-  // Obtenemos el atributo rememberMe desde el cuerpo del request
-  const { rememberMe } = req.body;
-
   passport.authenticate('basic', (error, data) => {
     try {
       if (error || !data) {
         next(boom.unauthorized());
       }
 
-      const { token, ...user } = data;
       req.login(data, { session: false }, async (error) => {
-        if (error) next(error);
-        if (!config.dev) {
-          res.cookie('token', token, {
-            httpOnly: !config.dev,
-            secure: !config.dev,
-            maxAge: rememberMe ? THIRTY_DAYS_IN_SEC : TWO_HOURS_IN_SEC,
-          });
-        } else {
-          res.cookie('token', token);
+        if (error) {
+          next(error);
         }
+
+        const { token, ...user } = data;
+
+        res.cookie('token', token, {
+          httpOnly: !config.dev,
+          secure: !config.dev,
+        });
 
         res.status(200).json(user);
       });
-    } catch (e) {
+    } catch (error) {
       next(error);
     }
   })(req, res, next);
@@ -130,16 +118,24 @@ app.post('/auth/sign-in', async (req, res, next) => {
 
 app.post('/auth/sign-up', async (req, res, next) => {
   const { body: user } = req;
-  try {
-    await axios({
-      url: `${config.apiUrl}/api/auth/sign-in`,
-      method: 'post',
-      data: user,
-    });
 
-    res.status(201).json({ message: 'user created' });
-  } catch (e) {
-    next(e);
+  try {
+    const userData = await axios({
+      url: `${process.env.API_URL}/api/auth/sign-up`,
+      method: 'post',
+      data: {
+        email: user.email,
+        name: user.name,
+        password: user.password,
+      },
+    });
+    res.status(201).json({
+      name: req.body.name,
+      email: req.body.email,
+      id: userData.data.id,
+    });
+  } catch (error) {
+    next(error);
   }
 });
 
@@ -147,5 +143,5 @@ app.get('*', renderApp);
 
 app.listen(PORT, (err) => {
   if (err) console.log(err);
-  else console.log(`Server running in mode ${ENV} on port ${PORT}`);
+  else console.log(`${ENV} server running on Port ${PORT}`);
 });

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { registerRequest } from '../actions';
+import { registerUser } from '../actions';
 import '../assets/styles/components/Register.scss';
 
 const Register = (props) => {
@@ -18,7 +18,7 @@ const Register = (props) => {
   };
   const handleSubmit = (event) => {
     event.preventDefault();
-    props.registerRequest(form);
+    props.registerUser(form, '/login');
     props.history.push('/');
   };
   return (
@@ -26,28 +26,12 @@ const Register = (props) => {
       <section className='register__container'>
         <h2>Regístrate</h2>
         <form className='register__container--form' onSubmit={handleSubmit}>
-          <input
-            name='name'
-            type='text'
-            className='input form'
-            placeholder='Nombre'
-            onChange={handleInput}
-          />
-          <input
-            name='email'
-            type='email'
-            className='input form'
-            placeholder='Correo'
-            onChange={handleInput}
-          />
-          <input
-            name='password'
-            type='password'
-            className='input form'
-            placeholder='Password'
-            onChange={handleInput}
-          />
-          <button type='button' className='button'>Regístrame</button>
+          <input name='name' type='text' className='input form' placeholder='Nombre' onChange={handleInput} />
+          <input name='email' type='email' className='input form' placeholder='Correo' onChange={handleInput} />
+          <input name='password' type='password' className='input form' placeholder='Password' onChange={handleInput} />
+          <button type='submit' className='button'>
+            Regístrame
+          </button>
         </form>
         <Link to='/login'>Iniciar Sesión</Link>
       </section>
@@ -56,7 +40,7 @@ const Register = (props) => {
 };
 
 const mapDispatchToProps = {
-  registerRequest,
+  registerUser,
 };
 
 export default connect(null, mapDispatchToProps)(Register);
