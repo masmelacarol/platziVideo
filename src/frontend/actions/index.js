@@ -17,4 +17,27 @@ export const registerUser = (payload, redirectUrl) => async (dispatch) => {
     dispatch(setError(error));
   }
 };
+
+export const loginUser = ({ email, password }, redirectUrl) => async (dispatch) => {
+  try {
+    const { data } = await axios({
+      url: '/auth/sign-in',
+      method: 'post',
+      auth: {
+        username: email,
+        password,
+      },
+    });
+    console.log('loginUser -> data', data);
+    document.cookie = `email=${data.user.email}`;
+    document.cookie = `name=${data.user.name}`;
+    document.cookie = `id=${data.user.id}`;
+    // document.cookie = `token=${data.token}`;
+
+    dispatch(loginRequest(data.user));
+    window.location.href = redirectUrl;
+  } catch (error) {
+    dispatch(setError(error));
+  }
+};
 //

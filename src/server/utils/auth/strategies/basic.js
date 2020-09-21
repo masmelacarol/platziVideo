@@ -1,3 +1,4 @@
+/* eslint-disable func-names */
 const passport = require('passport');
 const { BasicStrategy } = require('passport-http');
 const boom = require('@hapi/boom');
@@ -20,11 +21,13 @@ passport.use(
         },
       });
 
-      if (!data || status !== 200) return cb(boom.unauthorized(), false);
+      if (!data || status !== 200) {
+        return cb(boom.unauthorized(), false);
+      }
 
       return cb(null, data);
-    } catch (e) {
-      cb(e);
+    } catch (error) {
+      cb(error);
     }
   }),
 );
