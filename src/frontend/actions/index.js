@@ -28,7 +28,6 @@ export const loginUser = ({ email, password }, redirectUrl) => async (dispatch) 
         password,
       },
     });
-    console.log('loginUser -> data', data);
     document.cookie = `email=${data.user.email}`;
     document.cookie = `name=${data.user.name}`;
     document.cookie = `id=${data.user.id}`;

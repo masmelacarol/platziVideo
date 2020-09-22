@@ -1,10 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import Search from '../components/Search';
-import Categories from '../components/Categories';
+import '../assets/styles/App.scss';
 import Carousel from '../components/Carousel';
 import CarouselItem from '../components/CarouselItem';
-import '../assets/styles/App.scss';
+import Categories from '../components/Categories';
+import Search from '../components/Search';
 
 const Home = ({ mylist, trends, originals }) => {
   return (
@@ -13,19 +13,24 @@ const Home = ({ mylist, trends, originals }) => {
       {mylist.length > 0 && (
         <Categories title='Mi Lista de Favoritos'>
           <Carousel>
-            {mylist.map((item) => <CarouselItem key={item.id} {...item} isList />)}
+            {mylist.map((item) => (
+              <CarouselItem key={item.id} {...item} isList />
+            ))}
           </Carousel>
         </Categories>
       )}
       <Categories title='Tendencias'>
         <Carousel>
-          {trends.map((item) => <CarouselItem key={item.id} {...item} />)}
-
+          {trends.map((item) => (
+            <CarouselItem key={item.id} {...item} />
+          ))}
         </Carousel>
       </Categories>
       <Categories title='Originales de Platzi Video'>
         <Carousel>
-          {originals.map((item) => <CarouselItem key={item.id} {...item} />)}
+          {originals.map((item) => (
+            <CarouselItem key={item.id} {...item} />
+          ))}
         </Carousel>
       </Categories>
     </>

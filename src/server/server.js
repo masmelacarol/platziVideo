@@ -15,7 +15,6 @@ import { StaticRouter } from 'react-router-dom';
 import { createStore } from 'redux';
 import webpack from 'webpack';
 import Layout from '../frontend/components/Layout';
-import initialState from '../frontend/initialState';
 import reducer from '../frontend/reducers';
 import serverRoutes from '../frontend/routes/serverRoutes';
 import getManifest from './getManifest';
@@ -76,13 +75,64 @@ const setResponse = (html, preloadedState, manifest) => {
       </html>`;
 };
 
-const renderApp = (req, res) => {
+const renderApp = async (req, res) => {
+  let initialState;
+  const { token, email, name, id } = req.cookies;
+
+  try {
+    let movieList = await axios({
+      url: `${process.env.API_URL}/api/movies`,
+      headers: { Authorization: `Bearer ${token}` },
+      method: 'get',
+    });
+    movieList = movieList.data.data;
+
+    let userMovies = await axios({
+      url: `${process.env.API_URL}/api/user-movies/?userId=${id}`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      method: 'get',
+    });
+
+    userMovies = userMovies.data.data;
+    const mylist = [];
+
+    userMovies.forEach((userMovie) => {
+      movieList.forEach((movie) => {
+        if (movie._id === userMovie.movieId) {
+          mylist.push(movie);
+        }
+      });
+    });
+    initialState = {
+      user: {
+        id,
+        email,
+        name,
+      },
+      searchResult: [],
+      playing: {},
+      mylist,
+      trends: movieList.filter((movie) => movie.contentRating === 'PG' && movie._id),
+      originals: movieList.filter((movie) => movie.contentRating === 'G' && movie._id),
+    };
+  } catch (error) {
+    initialState = {
+      user: {},
+      mylist: [],
+      trends: [],
+      originals: [],
+    };
+  }
+
   const store = createStore(reducer, initialState);
   const preloadedState = store.getState();
+  const isLogged = !!initialState.user.id;
   const html = renderToString(
     <Provider store={store}>
       <StaticRouter location={req.url} context={{}}>
-        <Layout>{renderRoutes(serverRoutes)}</Layout>
+        <Layout>{renderRoutes(serverRoutes(isLogged))}</Layout>
       </StaticRouter>
     </Provider>,
   );
@@ -134,6 +184,59 @@ app.post('/auth/sign-up', async (req, res, next) => {
       email: req.body.email,
       id: userData.data.id,
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/user-movies', async (req, res, next) => {
+  try {
+    const { body: userMovie } = req;
+    const { token } = req.cookies;
+
+    const { data, status } = await axios({
+      url: `${process.env.API_URL}/api/user-movies`,
+      headers: { Authorization: `Bearer ${token}` },
+      method: 'post',
+      data: userMovie,
+    });
+
+    if (status !== 201) {
+      return next(boom.badImplementation());
+    }
+
+    res.status(201).json(data);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/user-movies/:userMovieId', async (req, res, next) => {
+  try {
+    const { userMovieId } = req.params;
+    const { token, id } = req.cookies;
+
+    let userMovies = await axios({
+      url: `${process.env.API_URL}/api/user-movies/?userId=${id}`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      method: 'get',
+    });
+    userMovies = userMovies.data.data;
+
+    const listDelete = userMovies.filter((movie) => movie.movieId === userMovieId);
+    const { data, status } = await axios({
+      url: `${process.env.API_URL}/api/user-movies/${listDelete[0]._id}`,
+      headers: { Authorization: `Bearer ${token}` },
+      method: 'delete',
+    });
+
+    if (status !== 200) {
+      return next(boom.badImplementation());
+    }
+
+    res.status(200).json(data);
   } catch (error) {
     next(error);
   }

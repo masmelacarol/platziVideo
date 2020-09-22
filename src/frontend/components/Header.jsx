@@ -1,18 +1,23 @@
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import gravatar from '../utils/gravatar';
 import { logoutRequest } from '../actions';
-import '../assets/styles/components/Header.scss';
 import logo from '../assets/static/logo-platzi-video-BW2.png';
 import userIcon from '../assets/static/user-icon.png';
+import '../assets/styles/components/Header.scss';
+import gravatar from '../utils/gravatar';
 
 const Header = (props) => {
   const { user } = props;
   const hasUser = Object.keys(user).length > 0;
   const handleLogout = () => {
+    document.cookie = 'email=';
+    document.cookie = 'name=';
+    document.cookie = 'id=';
+    document.cookie = 'token=';
     props.logoutRequest({});
+    window.location.href = '/login';
   };
   return (
     <header className='header'>
@@ -21,19 +26,26 @@ const Header = (props) => {
       </Link>
       <div className='header__menu'>
         <div className='header__menu--profile'>
-          {(hasUser) ?
-            <img src={gravatar(user.email)} alt={user.email} /> :
-            <img src={userIcon} alt='User Icon' />}
+          {hasUser ? <img src={gravatar(user.email)} alt={user.email} /> : <img src={userIcon} alt='User Icon' />}
           <p>Perfil</p>
         </div>
         <ul>
-          {hasUser ?
-            <li><a href='/'>{user.name}</a></li> :
-            null}
-          {hasUser ?
-            <li><Link to='#logout' onClick={handleLogout}>Cerrar Sesión</Link></li> :
-            <li><Link to='/login'>Iniciar Sesión</Link></li>}
-
+          {hasUser ? (
+            <li>
+              <a href='/'>{user.name}</a>
+            </li>
+          ) : null}
+          {hasUser ? (
+            <li>
+              <Link to='#logout' onClick={handleLogout}>
+                Cerrar Sesión
+              </Link>
+            </li>
+          ) : (
+            <li>
+              <Link to='/login'>Iniciar Sesión</Link>
+            </li>
+          )}
         </ul>
       </div>
     </header>
