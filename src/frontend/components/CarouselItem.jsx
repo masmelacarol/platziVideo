@@ -2,29 +2,32 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { deleteFavorite, setFavorite } from '../actions';
+import { dropFavorite, postFavorite } from '../actions';
 import playIcon from '../assets/static/play.png';
 import plusIcon from '../assets/static/plus.png';
 import removeIcon from '../assets/static/remove-icon.png';
 import '../assets/styles/components/CarouselItem.scss';
 
 const CarouselItem = (props) => {
-  const { mylist, id, title, year, contentRating, duration, cover, isList } = props;
+  const { mylist, id, title, year, contentRating, duration, cover, isList, _id, user } = props;
   const handleSetFavorite = () => {
     const videoExist = mylist.find((itemId) => itemId.id === id);
     if (!videoExist) {
-      props.setFavorite({
+      const movie = {
         id,
         title,
         year,
         contentRating,
         duration,
         cover,
-      });
+        _id,
+      };
+      const userId = user.id;
+      props.postFavorite(userId, _id, movie);
     }
   };
-  const handleDeleteFavorite = (item) => {
-    props.deleteFavorite(item);
+  const handleDeleteFavorite = (itemId) => {
+    props.dropFavorite(_id, itemId);
   };
   return (
     <div className='carousel-item'>
@@ -57,12 +60,13 @@ CarouselItem.propTypes = {
 };
 
 const mapDispatchToProps = {
-  setFavorite,
-  deleteFavorite,
+  postFavorite,
+  dropFavorite,
 };
 const mapStateToProps = (state) => {
   return {
     mylist: state.mylist,
+    user: state.user,
   };
 };
 

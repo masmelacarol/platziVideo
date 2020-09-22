@@ -39,4 +39,39 @@ export const loginUser = ({ email, password }, redirectUrl) => async (dispatch) 
     dispatch(setError(error));
   }
 };
+
+export const postFavorite = (userId, movieId, movie) => {
+  return (dispatch) => {
+    const body = {
+      userId,
+      movieId,
+    };
+    axios
+      .post('/user-movies', body)
+      .then(({ data }) => {
+        const {
+          data: { movieExist },
+        } = data;
+
+        if (!movieExist) {
+          dispatch(setFavorite(movie));
+        }
+      })
+      .catch((error) => dispatch(setError(error)));
+  };
+};
+
+export const dropFavorite = (userMovieId, movieId) => {
+  return (dispatch) => {
+    axios
+      .delete(`/user-movies/${userMovieId}`)
+      .then(({ status }) => {
+        if (status === 200) {
+          dispatch(deleteFavorite(movieId));
+        }
+      })
+      .catch((error) => dispatch(setError(error)));
+  };
+};
+
 //
